@@ -1,0 +1,601 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حساب‌یار | پنل مدیریت مالی</title>
+
+<style>
+:root {
+  --bg: #080d1b;
+  --panel: rgba(22, 32, 58, .72);
+  --border: rgba(255,255,255,.10);
+  --blue: #64a7ff;
+  --purple: #9b8aff;
+  --text: #edf3ff;
+  --muted: #8c9bb8;
+  --green: #42d6a4;
+  --red: #ff7085;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 10% 5%, #18295a 0, transparent 35%),
+    radial-gradient(ellipse at 95% 80%, #301c55 0, transparent 30%),
+    var(--bg);
+  min-height: 100vh;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 245px;
+  padding: 25px 17px;
+  border-left: 1px solid var(--border);
+  background: rgba(10,16,32,.78);
+  backdrop-filter: blur(25px);
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 5;
+}
+.brand {
+  font-size: 23px;
+  font-weight: bold;
+  padding: 12px;
+  margin-bottom: 32px;
+}
+.brand span { color: var(--blue); }
+.nav-title { color: var(--muted); font-size: 11px; padding: 10px 14px; }
+.nav {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #aab8d1;
+  text-align: right;
+  padding: 14px;
+  border-radius: 13px;
+  margin-bottom: 6px;
+}
+.nav:hover, .nav.active {
+  background: linear-gradient(110deg,rgba(75,139,255,.22),rgba(135,91,255,.12));
+  color: white;
+  border-color: rgba(100,167,255,.2);
+}
+.main { width: calc(100% - 245px); margin-right: 245px; padding: 30px; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:30px; }
+h1 { font-size:25px; margin:0 0 9px; }
+.subtitle { color:var(--muted); font-size:13px; }
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(22px);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.12);
+}
+.btn {
+  border: 0; border-radius: 12px; padding: 12px 17px;
+  background: linear-gradient(110deg,#438df9,#8968f8);
+  color:white; font-weight:bold;
+}
+.btn.secondary { background:rgba(255,255,255,.07); border:1px solid var(--border); }
+.stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-bottom:22px; }
+.stat { padding:22px; }
+.stat-label { color:var(--muted); font-size:13px; margin-bottom:18px; }
+.stat-value { font-size:clamp(20px,2.3vw,29px); font-weight:bold; overflow-wrap:anywhere; }
+.stat-foot { font-size:12px; color:var(--muted); margin-top:12px; }
+.blue { color:var(--blue); } .green { color:var(--green); } .red { color:var(--red); }
+.content-grid { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.section { padding:22px; margin-bottom:20px; min-width:0; }
+.section-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:22px; }
+h2 { font-size:16px; margin:0; }
+input, select {
+  width:100%; padding:12px; color:var(--text);
+  background:rgba(4,10,25,.7); border:1px solid var(--border);
+  border-radius:11px; outline:none;
+}
+input:focus,select:focus { border-color:var(--blue); }
+select option { background:#111a30; }
+label { display:block; color:#b3bfd5; font-size:12px; margin-bottom:8px; }
+.field { margin-bottom:15px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.full { grid-column:1 / -1; }
+table { width:100%; border-collapse:collapse; white-space:nowrap; }
+th,td { padding:15px 10px; text-align:right; border-bottom:1px solid var(--border); font-size:12px; }
+th { color:var(--muted); font-weight:normal; }
+.table-wrap { overflow-x:auto; }
+.pill { display:inline-block; padding:6px 9px; border-radius:8px; background:rgba(255,255,255,.07); }
+.empty { text-align:center; color:var(--muted); padding:30px; }
+.page { display:none; } .page.active { display:block; }
+.chart-bars { display:flex; gap:12px; height:190px; align-items:end; padding-top:15px; }
+.bar-item { flex:1; text-align:center; color:var(--muted); font-size:11px; }
+.bar { min-height:4px; border-radius:8px 8px 3px 3px; background:linear-gradient(#70b7ff,#7662ef); margin-bottom:10px; }
+.notice { color:var(--muted); font-size:12px; line-height:2; }
+.actions { display:flex; gap:8px; flex-wrap:wrap; }
+.delete { background:rgba(255,112,133,.12); color:var(--red); border:0; border-radius:8px; padding:7px 10px; }
+.date-wrap { position:relative; }
+.date-input { cursor:pointer; }
+.calendar {
+  display:none; position:absolute; z-index:10; top:calc(100% + 8px); right:0;
+  width:290px; padding:15px; background:#111a30;
+  border:1px solid var(--border); border-radius:16px;
+  box-shadow:0 15px 45px #0008;
+}
+.calendar.open { display:block; }
+.cal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; }
+.cal-head button { color:white; background:#273656; border:0; padding:7px 10px; border-radius:8px; }
+.cal-selects { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-grid button { border:0; border-radius:7px; padding:8px 0; color:var(--text); background:transparent; font-size:12px; }
+.cal-grid button:hover,.cal-grid button.selected { background:#467ff0; }
+.cal-grid .weekday { color:var(--muted); text-align:center; font-size:10px; padding:6px 0; }
+.mobile-menu { display:none; }
+@media(max-width:1050px) {
+  .stats { grid-template-columns:1fr 1fr; }
+  .content-grid { grid-template-columns:1fr; }
+}
+@media(max-width:720px) {
+  .sidebar { transform:translateX(100%); transition:transform .25s; width:260px; }
+  .sidebar.open { transform:translateX(0); }
+  .main { width:100%; margin:0; padding:18px 13px; }
+  .mobile-menu { display:inline-block; }
+  .topbar { align-items:flex-start; }
+  .stats { grid-template-columns:1fr; gap:10px; }
+  .stat { padding:18px; }
+  .form-grid { grid-template-columns:1fr; }
+  .full { grid-column:auto; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">حساب<span>‌یار.</span></div>
+    <div class="nav-title">مدیریت مالی</div>
+    <button class="nav active" data-page="dashboard">◈ &nbsp; داشبورد</button>
+    <button class="nav" data-page="transactions">↕ &nbsp; تراکنش‌ها</button>
+    <button class="nav" data-page="reports">▥ &nbsp; گزارش مالی</button>
+    <div class="nav-title">ابزارها</div>
+    <button class="nav" data-page="sms">✉ &nbsp; خواندن پیامک بانکی</button>
+    <button class="nav" data-page="settings">⚙ &nbsp; تنظیمات و پشتیبان</button>
+    <p class="notice" style="margin:35px 12px">نسخه شخصی حساب‌یار<br>اطلاعات در همین مرورگر ذخیره می‌شود.</p>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="btn secondary mobile-menu" id="menuBtn">☰</button>
+        <div>
+          <h1 id="pageTitle">داشبورد مالی</h1>
+          <div class="subtitle" id="today"></div>
+        </div>
+      </div>
+      <button class="btn" onclick="goPage('transactions')">＋ ثبت تراکنش</button>
+    </header>
+
+    <section class="page active" id="dashboard">
+      <div class="stats">
+        <div class="glass stat">
+          <div class="stat-label">موجودی خالص</div>
+          <div class="stat-value blue" id="balance">۰</div>
+          <div class="stat-foot">درآمد منهای هزینه‌ها · تومان</div>
+        </div>
+        <div class="glass stat">
+          <div class="stat-label">مجموع درآمد</div>
+          <div class="stat-value green" id="income">۰</div>
+          <div class="stat-foot">تمام درآمدهای ثبت‌شده</div>
+        </div>
+        <div class="glass stat">
+          <div class="stat-label">مجموع هزینه</div>
+          <div class="stat-value red" id="expense">۰</div>
+          <div class="stat-foot">تمام هزینه‌های ثبت‌شده</div>
+        </div>
+      </div>
+      <div class="content-grid">
+        <div class="glass section">
+          <div class="section-head"><h2>تراکنش‌های اخیر</h2><button class="btn secondary" onclick="goPage('transactions')">مشاهده همه</button></div>
+          <div class="table-wrap"><table><thead><tr><th>عنوان</th><th>تاریخ</th><th>مبلغ</th></tr></thead><tbody id="recentRows"></tbody></table></div>
+        </div>
+        <div class="glass section">
+          <div class="section-head"><h2>خلاصه تراکنش‌ها</h2></div>
+          <div id="summary" class="notice"></div>
+          <div class="chart-bars" id="chart"></div>
+          <p class="notice">نمودار بر اساس ۶ تراکنش اخیر است.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="transactions">
+      <div class="glass section">
+        <div class="section-head"><h2>ثبت تراکنش جدید</h2></div>
+        <form id="transactionForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="title">عنوان تراکنش</label>
+              <input id="title" placeholder="مثلاً خرید روزانه" required maxlength="100">
+            </div>
+            <div class="field">
+              <label for="type">نوع تراکنش</label>
+              <select id="type"><option value="expense">هزینه</option><option value="income">درآمد</option></select>
+            </div>
+            <div class="field">
+              <label for="amount">مبلغ به تومان</label>
+              <input id="amount" inputmode="numeric" placeholder="مثلاً ۱.۵۰۰.۰۰۰" required>
+            </div>
+            <div class="field">
+              <label>تاریخ شمسی</label>
+              <div class="date-wrap">
+                <input class="date-input" id="date" placeholder="انتخاب تاریخ" readonly required>
+                <div class="calendar" id="calendar">
+                  <div class="cal-head">
+                    <button type="button" id="prevMonth">‹</button>
+                    <strong id="calTitle"></strong>
+                    <button type="button" id="nextMonth">›</button>
+                  </div>
+                  <div class="cal-selects">
+                    <select id="calMonth" aria-label="ماه"></select>
+                    <select id="calYear" aria-label="سال"></select>
+                  </div>
+                  <div class="cal-grid" id="calGrid"></div>
+                </div>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="category">دسته‌بندی</label>
+              <select id="category"><option>عمومی</option><option>خوراک</option><option>حمل‌ونقل</option><option>خرید</option><option>حقوق</option><option>قبض</option><option>سرگرمی</option><option>سایر</option></select>
+            </div>
+            <div class="field full">
+              <label for="description">توضیحات (اختیاری)</label>
+              <input id="description" placeholder="یادداشت تراکنش">
+            </div>
+          </div>
+          <button class="btn" type="submit">ذخیره تراکنش</button>
+          <span id="formMessage" class="notice" role="status"></span>
+        </form>
+      </div>
+      <div class="glass section">
+        <div class="section-head"><h2>فهرست تراکنش‌ها</h2><input id="search" placeholder="جست‌وجوی عنوان..." style="max-width:240px"></div>
+        <div class="table-wrap"><table><thead><tr><th>عنوان</th><th>دسته</th><th>تاریخ</th><th>نوع</th><th>مبلغ</th><th>عملیات</th></tr></thead><tbody id="transactionRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="reports">
+      <div class="stats">
+        <div class="glass stat"><div class="stat-label">تعداد تراکنش‌ها</div><div class="stat-value blue" id="count">۰</div></div>
+        <div class="glass stat"><div class="stat-label">میانگین مبلغ تراکنش</div><div class="stat-value" id="average">۰</div></div>
+        <div class="glass stat"><div class="stat-label">تعداد درآمدها</div><div class="stat-value green" id="incomeCount">۰</div></div>
+      </div>
+      <div class="glass section">
+        <div class="section-head"><h2>خروجی گزارش</h2></div>
+        <p class="notice">می‌توانی اطلاعات تراکنش‌ها را به‌صورت CSV دریافت کنی و در Excel باز کنی.</p>
+        <div class="actions"><button class="btn" onclick="exportCSV()">خروجی CSV</button><button class="btn secondary" onclick="window.print()">چاپ / ذخیره PDF</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="sms">
+      <div class="glass section">
+        <div class="section-head"><h2>تجزیه پیامک بانکی</h2></div>
+        <p class="notice">متن پیامک بانکی را وارد کن. این ابزار مبلغ احتمالی را تشخیص می‌دهد؛ قبل از ذخیره، اطلاعات را بررسی کن. سایت نمی‌تواند مستقیماً پیامک‌های گوشی را بخواند.</p>
+        <div class="field"><label for="smsText">متن پیامک</label><input id="smsText" placeholder="موجودی یا مبلغ تراکنش..."></div>
+        <button class="btn" id="parseSms">تشخیص مبلغ</button>
+        <p id="smsResult" class="notice"></p>
+      </div>
+    </section>
+
+    <section class="page" id="settings">
+      <div class="glass section">
+        <div class="section-head"><h2>پشتیبان‌گیری از اطلاعات</h2></div>
+        <p class="notice">یک نسخه JSON از تراکنش‌ها ذخیره کن تا بتوانی آن را نگه داری.</p>
+        <div class="actions">
+          <button class="btn" onclick="backup()">دریافت نسخه پشتیبان</button>
+          <button class="btn secondary" onclick="document.getElementById('restoreFile').click()">بازیابی نسخه پشتیبان</button>
+          <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p class="notice" id="settingsMessage"></p>
+        <hr style="border-color:var(--border);margin:25px 0">
+        <p class="notice">اطلاعات در حافظه مرورگر همین دستگاه ذخیره می‌شود. پاک‌کردن داده‌های مرورگر ممکن است اطلاعات را حذف کند؛ از نسخه پشتیبان استفاده کن.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "hesabyar.transactions.v2";
+const faDigits = "۰۱۲۳۴۵۶۷۸۹";
+const months = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const weekdays = ["ش","ی","د","س","چ","پ","ج"];
+
+function toEnglishDigits(value) {
+  return String(value ?? "").replace(/[۰-۹]/g, d => String(faDigits.indexOf(d)))
+    .replace(/[٠-٩]/g, d => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+}
+function formatNumber(value) {
+  const n = Math.round(Number(value) || 0);
+  return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 }).format(n).replace(/٬/g, ".");
+}
+function parseAmount(value) {
+  const cleaned = toEnglishDigits(value).replace(/[.,\s٬٫]/g, "").replace(/[^\d]/g, "");
+  if (!cleaned) return NaN;
+  const n = Number(cleaned);
+  return Number.isSafeInteger(n) ? n : NaN;
+}
+function todayJalali() {
+  const parts = new Intl.DateTimeFormat("en-u-ca-persian", {
+    year:"numeric",month:"numeric",day:"numeric",timeZone:"Asia/Tehran"
+  }).formatToParts(new Date());
+  const p = Object.fromEntries(parts.map(x => [x.type,x.value]));
+  return { y:Number(p.year), m:Number(p.month), d:Number(p.day) };
+}
+function jalaliString(d) {
+  return `${d.y}/${String(d.m).padStart(2,"0")}/${String(d.d).padStart(2,"0")}`;
+}
+function validJalaliDate(s) {
+  const m = String(s).match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (!m) return false;
+  const y=+m[1], mo=+m[2], d=+m[3];
+  if (mo<1 || mo>12 || d<1) return false;
+  const max = mo<=6 ? 31 : mo<=11 ? 30 : isLeapJalali(y) ? 30 : 29;
+  return d<=max;
+}
+function isLeapJalali(y) {
+  // اعتبارسنجی متداول چرخه تقویم جلالی برای سال‌های معمول
+  const breaks=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178];
+  if (y<breaks[0] || y>=breaks[breaks.length-1]) return false;
+  let jp=breaks[0], jump=0, leapJ=-14;
+  for(let i=1;i<breaks.length;i++){
+    const jm=breaks[i]; jump=jm-jp;
+    if(y<jm) break;
+    leapJ += Math.floor(jump/33)*8 + Math.floor((jump%33)/4);
+    jp=jm;
+  }
+  let n=y-jp;
+  leapJ += Math.floor(n/33)*8 + Math.floor(((n%33)+3)/4);
+  if(jump%33===4 && jump-n===4) leapJ++;
+  const gy=y+621;
+  let leapG=Math.floor(gy/4)-(Math.floor((gy/100+1)*3)/4)-150;
+  let march=20+leapJ-leapG;
+  if(jump-n<6) n=n-jump+Math.floor((jump+4)/33)*33;
+  let leap=(((n+1)%33)-1)%4;
+  if(leap===-1) leap=4;
+  return leap===0;
+}
+
+let transactions = [];
+try {
+  const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  if (Array.isArray(stored)) transactions = stored.filter(t =>
+    t && typeof t.id==="string" && typeof t.title==="string" &&
+    Number.isSafeInteger(t.amount) && t.amount>=0 &&
+    ["income","expense"].includes(t.type) && validJalaliDate(t.date)
+  );
+} catch(e) { console.warn("Could not load saved transactions",e); }
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(transactions));
+    return true;
+  } catch(e) {
+    alert("ذخیره اطلاعات ناموفق بود. فضای مرورگر یا تنظیمات حریم خصوصی را بررسی کن.");
+    return false;
+  }
+}
+function safeText(value) {
+  return String(value ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function totals() {
+  return transactions.reduce((a,t)=> {
+    a[t.type] += t.amount; return a;
+  },{income:0,expense:0});
+}
+function render() {
+  const t=totals();
+  $("balance").textContent=formatNumber(t.income-t.expense);
+  $("income").textContent=formatNumber(t.income);
+  $("expense").textContent=formatNumber(t.expense);
+  $("count").textContent=formatNumber(transactions.length);
+  $("incomeCount").textContent=formatNumber(transactions.filter(x=>x.type==="income").length);
+  $("average").textContent=formatNumber(transactions.length ?
+    transactions.reduce((a,x)=>a+x.amount,0)/transactions.length : 0);
+  $("summary").textContent=`${formatNumber(transactions.length)} تراکنش ثبت شده · ${formatNumber(t.income)} تومان درآمد · ${formatNumber(t.expense)} تومان هزینه`;
+  const sorted=[...transactions].sort((a,b)=>b.createdAt-a.createdAt);
+  $("recentRows").innerHTML=sorted.slice(0,5).map(x=>`<tr>
+    <td>${safeText(x.title)}</td><td>${safeText(x.date)}</td>
+    <td class="${x.type==="income"?"green":"red"}">${x.type==="income"?"+":"−"} ${formatNumber(x.amount)}</td>
+  </tr>`).join("") || `<tr><td colspan="3" class="empty">هنوز تراکنشی ثبت نشده است.</td></tr>`;
+  const q=$("search").value.trim().toLocaleLowerCase("fa");
+  const filtered=sorted.filter(x=>x.title.toLocaleLowerCase("fa").includes(q) || x.category.toLocaleLowerCase("fa").includes(q));
+  $("transactionRows").innerHTML=filtered.map(x=>`<tr>
+    <td>${safeText(x.title)}</td><td>${safeText(x.category)}</td><td>${safeText(x.date)}</td>
+    <td><span class="pill ${x.type==="income"?"green":"red"}">${x.type==="income"?"درآمد":"هزینه"}</span></td>
+    <td>${formatNumber(x.amount)} تومان</td>
+    <td><button class="delete" data-delete="${safeText(x.id)}">حذف</button></td>
+  </tr>`).join("") || `<tr><td colspan="6" class="empty">تراکنشی پیدا نشد.</td></tr>`;
+  const chartData=sorted.slice(0,6).reverse();
+  const max=Math.max(1,...chartData.map(x=>x.amount));
+  $("chart").innerHTML=chartData.map(x=>`<div class="bar-item">
+    <div class="bar" style="height:${Math.max(4,x.amount/max*135)}px;opacity:${x.type==="income"?1:.65}"></div>
+    <div>${safeText(x.title.slice(0,8))}</div>
+  </div>`).join("") || `<div class="empty">داده‌ای برای نمودار نیست.</div>`;
+}
+function goPage(id) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+  const titles={dashboard:"داشبورد مالی",transactions:"مدیریت تراکنش‌ها",reports:"گزارش مالی",sms:"خواندن پیامک بانکی",settings:"تنظیمات و پشتیبان"};
+  $("pageTitle").textContent=titles[id]||"حساب‌یار";
+  $("sidebar").classList.remove("open");
+  if(id==="transactions") $("title").focus({preventScroll:true});
+}
+document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.page)));
+$("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+$("search").addEventListener("input",render);
+
+$("amount").addEventListener("input",e=>{
+  const raw=toEnglishDigits(e.target.value).replace(/[^\d]/g,"");
+  if(!raw){e.target.value="";return;}
+  const pos=e.target.selectionStart;
+  const before=e.target.value.slice(0,pos);
+  const digitsBefore=toEnglishDigits(before).replace(/[^\d]/g,"").length;
+  e.target.value=formatNumber(raw);
+  let seen=0, index=0;
+  while(index<e.target.value.length && seen<digitsBefore) {
+    if(/[۰-۹0-9]/.test(e.target.value[index])) seen++;
+    index++;
+  }
+  e.target.setSelectionRange(index,index);
+});
+
+$("transactionForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const title=$("title").value.trim();
+  const amount=parseAmount($("amount").value);
+  const date=$("date").value;
+  if(!title || !Number.isSafeInteger(amount) || amount<=0 || !validJalaliDate(date)){
+    $("formMessage").textContent="عنوان، مبلغ معتبر و تاریخ صحیح وارد کن.";
+    return;
+  }
+  const item={
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random()),
+    title, amount, date, type:$("type").value,
+    category:$("category").value,
+    description:$("description").value.trim(),
+    createdAt:Date.now()
+  };
+  transactions.unshift(item);
+  if(!persist()){transactions.shift();return;}
+  e.target.reset();
+  $("date").value=jalaliString(todayJalali());
+  $("formMessage").textContent="تراکنش با موفقیت ذخیره شد.";
+  render();
+});
+$("transactionRows").addEventListener("click",e=>{
+  const id=e.target.dataset.delete;
+  if(!id)return;
+  if(!confirm("این تراکنش حذف شود؟"))return;
+  const old=transactions;
+  transactions=transactions.filter(t=>t.id!==id);
+  if(!persist())transactions=old;
+  render();
+});
+
+function download(filename,content,type) {
+  const blob=new Blob(["\uFEFF",content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportCSV() {
+  const rows=[["عنوان","مبلغ تومان","نوع","تاریخ شمسی","دسته","توضیحات"],
+    ...transactions.map(t=>[t.title,t.amount,t.type==="income"?"درآمد":"هزینه",t.date,t.category,t.description||""])];
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  download("hesabyar-transactions.csv",csv,"text/csv;charset=utf-8");
+}
+function backup() {
+  download("hesabyar-backup.json",JSON.stringify(transactions,null,2),"application/json");
+}
+$("restoreFile").addEventListener("change",async e=>{
+  const file=e.target.files[0]; if(!file)return;
+  try {
+    const data=JSON.parse(await file.text());
+    if(!Array.isArray(data) || !data.every(t=>t && typeof t.title==="string" &&
+      Number.isSafeInteger(t.amount) && t.amount>=0 &&
+      ["income","expense"].includes(t.type) && validJalaliDate(t.date))) {
+      throw new Error("invalid");
+    }
+    if(!confirm("اطلاعات فعلی با نسخه پشتیبان جایگزین شود؟"))return;
+    const old=transactions; transactions=data;
+    if(!persist())transactions=old;
+    render();$("settingsMessage").textContent="بازیابی انجام شد.";
+  } catch { $("settingsMessage").textContent="فایل پشتیبان معتبر نیست."; }
+  finally {e.target.value="";}
+});
+
+$("parseSms").addEventListener("click",()=>{
+  const text=toEnglishDigits($("smsText").value);
+  const matches=[...text.matchAll(/(?:\d{1,3}(?:[,٬.]\d{3})+|\d{4,})/g)]
+    .map(m=>parseAmount(m[0])).filter(n=>Number.isSafeInteger(n)&&n>0);
+  if(!matches.length){$("smsResult").textContent="مبلغی پیدا نشد؛ مبلغ را دستی وارد کن.";return;}
+  $("smsResult").textContent="مبلغ‌های پیدا شده (تومان): "+matches.map(formatNumber).join("، ")+" . متن را بررسی کن؛ ممکن است شماره کارت یا موجودی هم تشخیص داده شده باشد.";
+  $("amount").value=formatNumber(matches[0]);
+  goPage("transactions");
+});
+
+// تقویم شمسی: انتخاب روز، ماه و سال
+let selectedDate=todayJalali();
+let viewYear=selectedDate.y, viewMonth=selectedDate.m;
+const calendar=$("calendar");
+months.forEach((m,i)=>$("calMonth").add(new Option(m,i+1)));
+for(let y=1300;y<=1500;y++) $("calYear").add(new Option(String(y),y));
+$("calMonth").value=viewMonth;$("calYear").value=viewYear;
+$("date").value=jalaliString(selectedDate);
+
+function daysInMonth(y,m) {
+  if(m<=6)return 31;
+  if(m<=11)return 30;
+  return isLeapJalali(y)?30:29;
+}
+function renderCalendar() {
+  $("calMonth").value=viewMonth;$("calYear").value=viewYear;
+  $("calTitle").textContent=`${months[viewMonth-1]} ${viewYear}`;
+  const grid=$("calGrid");grid.innerHTML="";
+  weekdays.forEach(d=>{
+    const el=document.createElement("div");el.className="weekday";el.textContent=d;grid.append(el);
+  });
+  // محاسبه روز هفته با تبدیل تاریخ جلالی به میلادی
+  const first = new Date(Date.UTC(viewYear+621,2,20));
+  first.setUTCDate(first.getUTCDate() + (viewMonth-1)*30);
+  // نقطه شروع دقیق با Intl برای تاریخ‌های تقویم فارسی
+  let offset=0;
+  for(let d=1;d<=31;d++){
+    const dt=new Date(Date.UTC(viewYear+621,2,20+d-1));
+    const parts=new Intl.DateTimeFormat("en-u-ca-persian",{
+      year:"numeric",month:"numeric",day:"numeric",timeZone:"UTC"
+    }).formatToParts(dt);
+    const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
+    if(+p.year===viewYear && +p.month===viewMonth && +p.day===1){
+      offset=(dt.getUTCDay()+1)%7; break;
+    }
+  }
+  for(let i=0;i<offset;i++){const blank=document.createElement("span");grid.append(blank);}
+  for(let d=1;d<=daysInMonth(viewYear,viewMonth);d++){
+    const b=document.createElement("button");b.type="button";b.textContent=String(d).replace(/\d/g,x=>faDigits[x]);
+    if(selectedDate.y===viewYear&&selectedDate.m===viewMonth&&selectedDate.d===d)b.classList.add("selected");
+    b.addEventListener("click",()=>{
+      selectedDate={y:viewYear,m:viewMonth,d};
+      $("date").value=jalaliString(selectedDate);
+      calendar.classList.remove("open");
+    });
+    grid.append(b);
+  }
+}
+$("date").addEventListener("click",()=>{
+  calendar.classList.toggle("open");
+  if(calendar.classList.contains("open"))renderCalendar();
+});
+$("calMonth").addEventListener("change",()=>{viewMonth=+$("calMonth").value;renderCalendar();});
+$("calYear").addEventListener("change",()=>{viewYear=+$("calYear").value;renderCalendar();});
+$("prevMonth").addEventListener("click",()=>{
+  if(--viewMonth<1){viewMonth=12;viewYear--;}renderCalendar();
+});
+$("nextMonth").addEventListener("click",()=>{
+  if(++viewMonth>12){viewMonth=1;viewYear++;}renderCalendar();
+});
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".date-wrap"))calendar.classList.remove("open");
+});
+
+const today=todayJalali();
+$("today").textContent=`امروز: ${today.d} ${months[today.m-1]} ${today.y}`;
+render();
+</script>
+</body>
+</html>
